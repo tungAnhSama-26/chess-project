@@ -1,0 +1,40 @@
+#gameBoard {
+    width: 320px;
+    height: 320px;
+    background-color: transparent;
+    display: flex;
+    flex-wrap:  wrap;
+}
+
+
+.square {
+    height: 40px;
+    width: 40px;   
+}
+
+.beige {
+    background-color: #f0d9b5; 
+}
+
+.brown {
+    background-color: #b58863; 
+}
+
+.piece svg {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .piece svg path {
+    fill: currentColor;
+  }
+  
+  
+  .black {
+    color: #1c1c1c;
+  }
+  
+  .white {
+    color: white;
+  }
+  
