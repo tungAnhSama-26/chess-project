@@ -13,9 +13,7 @@ let moved = {
 };
 // vị trí bắt đầu của bàn cờ
 const startPieces = [
-  rook,
-  knight,
-  bishop,
+  rook,knight, bishop,
   queen,
   king,
   bishop,
@@ -97,6 +95,7 @@ function getPieceColor(pieceChar) {
   return pieceChar === pieceChar.toUpperCase() ? "white" : "black";
 }
 
+// kiểm tra hướng đi của các quân có khả năng đi chéo hoặc thẳng nhưng nhiều ô 
 function pathClear(startId, targetId, board) {
   const row1 = getRow(startId);
   const column1 = getColumn(startId);
@@ -149,27 +148,27 @@ function validMove(startId, targetId, currentPlayer, boardState) {
   // các quân cờ
   switch (type) {
     case "k":
-  // quân vua di chuyển bthg
-  if (absDRow <= 1 && absDCol <= 1) return true;
+      // quân vua di chuyển bthg
+      if (absDRow <= 1 && absDCol <= 1) return true;
 
-  // nhập thành
-  if (!moved[color].king && dRow === 0 && absDCol === 2) {
-    const homeRow = color === "white" ? 7 : 0;
-    if (row !== homeRow) return false;
+      // nhập thành
+      if (!moved[color].king && dRow === 0 && absDCol === 2) {
+        const homeRow = color === "white" ? 7 : 0;
+        if (row !== homeRow) return false;
 
-    // nhập thành cánh vua 0-0 
-    if (dCol === 2 && !moved[color].rookH) {
-      const path = [startId + 1, startId + 2];
-      return path.every(id => !boardState[id]);
-    }
+        // nhập thành cánh vua 0-0
+        if (dCol === 2 && !moved[color].rookH) {
+          const path = [startId + 1, startId + 2];
+          return path.every((id) => !boardState[id]);
+        }
 
-    // nhập thành cánh hậu 0-0-0
-    if (dCol === -2 && !moved[color].rookA) {
-      const path = [startId - 1, startId - 2, startId - 3];
-      return path.every(id => !boardState[id]);
-    }
-  }
-  return false;
+        // nhập thành cánh hậu 0-0-0
+        if (dCol === -2 && !moved[color].rookA) {
+          const path = [startId - 1, startId - 2, startId - 3];
+          return path.every((id) => !boardState[id]);
+        }
+      }
+      return false;
 
     case "n":
       return (
@@ -256,7 +255,7 @@ allSquares.forEach((square) => {
   square.addEventListener("dragenter", dragEnter);
   square.addEventListener("dragleave", dragLeave);
 });
-
+// nhấc quân để di chuyển 
 function dragStart(e) {
   const piece = e.target.closest(".piece");
   if (!piece) return;
@@ -274,12 +273,13 @@ function dragStart(e) {
   }, 0);
   e.dataTransfer.effectAllowed = "move";
 }
-
+// đặt quân vào ô cờ mong muốn chọn
 function dragOver(e) {
   e.preventDefault();
   e.dataTransfer.dropEffect = "move";
 }
 
+// tiếp nhận quân cờ đó nếu như nước đi đó được cho là di chuyển đúng 
 function dragEnter(e) {
   e.preventDefault();
   const targetId = parseInt(e.currentTarget.getAttribute("square-id"));
@@ -291,17 +291,18 @@ function dragEnter(e) {
     e.currentTarget.classList.add("highlight");
   }
 }
-
+// có thể là ko muốn đi quân đó nữa mà đi quân khác
 function dragLeave(e) {
   e.currentTarget.classList.remove("highlight");
 }
-
+// ăn quân, nhập thành và đổi sang lượt khác, phong cấp khi ở hàng cuối 
 function dragDrop(e) {
   e.preventDefault();
   const targetSquare = e.currentTarget;
   const targetId = parseInt(targetSquare.getAttribute("square-id"));
   targetSquare.classList.remove("highlight");
-
+/* trường hợp nếu như di chuyển sai thì quân đó không thể đi được mà cần phải di
+ chuyển đúng theo logic */ 
   if (
     !draggedElement ||
     startPositionId === targetId ||
@@ -310,7 +311,7 @@ function dragDrop(e) {
     resetDrag();
     return;
   }
-
+    
   const movingPiece = board[startPositionId];
 
   // capture
@@ -322,8 +323,11 @@ function dragDrop(e) {
   board[targetId] = movingPiece;
   board[startPositionId] = null;
 
-  // quân xe di chuyển khi nhập thành 
-  if (getPieceType(movingPiece) === "k" && Math.abs(targetId - startPositionId) === 2) {
+  // quân xe di chuyển khi nhập thành
+  if (
+    getPieceType(movingPiece) === "k" &&
+    Math.abs(targetId - startPositionId) === 2
+  ) {
     const rookFrom = targetId > startPositionId ? targetId + 1 : targetId - 2;
     const rookTo = targetId > startPositionId ? targetId - 1 : targetId + 1;
 
@@ -349,7 +353,10 @@ function dragDrop(e) {
   // tốt phong cấp
   if (getPieceType(movingPiece) === "p") {
     const row = getRow(targetId);
-    if ((movingPiece === "P" && row === 0) || (movingPiece === "p" && row === 7)) {
+    if (
+      (movingPiece === "P" && row === 0) ||
+      (movingPiece === "p" && row === 7)
+    ) {
       promotePawn(targetId, movingPiece);
     }
   }
@@ -357,10 +364,8 @@ function dragDrop(e) {
   // switch player
   currentPlayer = currentPlayer === "white" ? "black" : "white";
 
-
   resetDrag();
 }
-
 
 function resetDrag() {
   if (draggedElement) {
@@ -400,7 +405,7 @@ function checkmate(color) {
   return true;
 }
 
-function promotePawn(squareId,pawnChar) {
+function promotePawn(squareId, pawnChar) {
   const choice = prompt("Promote to: queen, rook, bishop, knight", "q");
 
   const color = getPieceColor(pawnChar);
@@ -408,16 +413,16 @@ function promotePawn(squareId,pawnChar) {
     q: queen,
     r: rook,
     b: bishop,
-    n: knight
+    n: knight,
   };
 
-  if(!map[choice]) return;
+  if (!map[choice]) return;
 
   const square = document.querySelector(`[square-id="${squareId}"]`);
-   square.innerHTML = map[choice];
+  square.innerHTML = map[choice];
   const pieceDiv = square.querySelector(".piece");
   pieceDiv.classList.add(color);
-  pieceDiv.setAttribute("draggable","true");
+  pieceDiv.setAttribute("draggable", "true");
 
-  board[squareId] = color === 'white' ? choice.toUpperCase() : choice;
+  board[squareId] = color === "white" ? choice.toUpperCase() : choice;
 }
