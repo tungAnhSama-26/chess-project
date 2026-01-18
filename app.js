@@ -300,14 +300,6 @@ function dragLeave(e) {
 // ăn quân, nhập thành và đổi sang lượt khác, phong cấp khi ở hàng cuối
 function dragDrop(e) {
 
-  // không cho di chuyển các quân khác nếu như không phải là để bảo vệ vua
-  const testBoard = [...board];
-  testBoard[targetId] = board[startPositionId];
-  testBoard[startPositionId] = null;
-  if(check(currentPlayer,testBoard)) {
-    resetDrag();
-    return;
-  }
   e.preventDefault();
   const targetSquare = e.currentTarget;
   const targetId = parseInt(targetSquare.getAttribute("square-id"));
@@ -319,6 +311,16 @@ function dragDrop(e) {
     startPositionId === targetId ||
     !validMove(startPositionId, targetId, currentPlayer, board)
   ) {
+    resetDrag();
+    return;
+  }
+
+  
+  // không cho di chuyển các quân khác nếu như không phải là để bảo vệ vua
+  const testBoard = [...board];
+  testBoard[targetId] = board[startPositionId];
+  testBoard[startPositionId] = null;
+  if(check(currentPlayer,testBoard)) {
     resetDrag();
     return;
   }
