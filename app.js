@@ -13,7 +13,9 @@ let moved = {
 };
 // vị trí bắt đầu của bàn cờ
 const startPieces = [
-  rook,knight, bishop,
+  rook,
+  knight,
+  bishop,
   queen,
   king,
   bishop,
@@ -95,7 +97,7 @@ function getPieceColor(pieceChar) {
   return pieceChar === pieceChar.toUpperCase() ? "white" : "black";
 }
 
-// kiểm tra hướng đi của các quân có khả năng đi chéo hoặc thẳng nhưng nhiều ô 
+// kiểm tra hướng đi của các quân có khả năng đi chéo hoặc thẳng nhưng nhiều ô
 function pathClear(startId, targetId, board) {
   const row1 = getRow(startId);
   const column1 = getColumn(startId);
@@ -255,7 +257,7 @@ allSquares.forEach((square) => {
   square.addEventListener("dragenter", dragEnter);
   square.addEventListener("dragleave", dragLeave);
 });
-// nhấc quân để di chuyển 
+// nhấc quân để di chuyển
 function dragStart(e) {
   const piece = e.target.closest(".piece");
   if (!piece) return;
@@ -279,7 +281,7 @@ function dragOver(e) {
   e.dataTransfer.dropEffect = "move";
 }
 
-// tiếp nhận quân cờ đó nếu như nước đi đó được cho là di chuyển đúng 
+// tiếp nhận quân cờ đó nếu như nước đi đó được cho là di chuyển đúng
 function dragEnter(e) {
   e.preventDefault();
   const targetId = parseInt(e.currentTarget.getAttribute("square-id"));
@@ -295,14 +297,23 @@ function dragEnter(e) {
 function dragLeave(e) {
   e.currentTarget.classList.remove("highlight");
 }
-// ăn quân, nhập thành và đổi sang lượt khác, phong cấp khi ở hàng cuối 
+// ăn quân, nhập thành và đổi sang lượt khác, phong cấp khi ở hàng cuối
 function dragDrop(e) {
+
+  // không cho di chuyển các quân khác nếu như không phải là để bảo vệ vua
+  const testBoard = [...board];
+  testBoard[targetId] = board[startPositionId];
+  testBoard[startPositionId] = null;
+  if(check(currentPlayer,testBoard)) {
+    resetDrag();
+    return;
+  }
   e.preventDefault();
   const targetSquare = e.currentTarget;
   const targetId = parseInt(targetSquare.getAttribute("square-id"));
   targetSquare.classList.remove("highlight");
-/* trường hợp nếu như di chuyển sai thì quân đó không thể đi được mà cần phải di
- chuyển đúng theo logic */ 
+  /* trường hợp nếu như di chuyển sai thì quân đó không thể đi được mà cần phải di
+ chuyển đúng theo logic */
   if (
     !draggedElement ||
     startPositionId === targetId ||
@@ -311,7 +322,7 @@ function dragDrop(e) {
     resetDrag();
     return;
   }
-    
+
   const movingPiece = board[startPositionId];
 
   // capture
@@ -378,30 +389,34 @@ function resetDrag() {
 function check(color, boardState) {
   const kingChar = color === "white" ? "k" : "k";
   const kingPosition = boardState.indexOf(kingChar);
-
+  if (kingPosition === -1) return false;
   return boardState.some((piece, index) => {
+    if (!piece) return false;
+
     if (!piece || getPieceColor(piece) === color) return false;
     return validMove(index, kingPosition, getPieceColor(piece), boardState);
   });
 }
 
-function checkmate(color) {
-  if (!check(color, board)) return false;
+function checkmate(color, boardState) {
+  if (!check(color, boardState)) return false;
 
   for (let i = 0; i < 64; i++) {
-    if (!board[i] || getPieceColor(board[i]) !== color) continue;
+    if (!boardState[i]) continue;
+    if (getPieceColor(board[i]) !== color) continue;
 
     for (let j = 0; j < 64; j++) {
-      if (!validMove(i, j, color, board)) continue;
+      if (!validMove(i, j, color, boardState)) continue;
 
-      const copy = [...board];
+      const copy = [...boardState];
       copy[j] = copy[i];
       copy[i] = null;
 
-      if (!check(color, copy)) return false;
+      if (!check(color, copy)) {
+        return false;
+      }
     }
   }
-
   return true;
 }
 
